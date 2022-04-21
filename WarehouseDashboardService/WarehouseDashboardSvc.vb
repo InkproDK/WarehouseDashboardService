@@ -63,7 +63,7 @@ Public Class WarehouseDashboardSvc
         GetOrdersAll()
         GetOrdersForToday()
         GetOrdersShippedToday()
-        GetOrdersPickByZone()
+        GetOrdersByPickZone()
         GetVariousOrderData()
 
         Try
@@ -146,29 +146,23 @@ Public Class WarehouseDashboardSvc
         Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersAll.ExecuteReader()
         Try
 
-            Dim arrValues As List(Of String()) = New List(Of String())
-
             While strSqlReader.Read()
 
+                If strSqlReader("Land") = "DKK" Then
+                    intAll_DK = strSqlReader("Antal")
+                End If
 
+                If strSqlReader("Land") = "SEK" Then
+                    intAll_SE = strSqlReader("Antal")
+                End If
 
-                arrValues.Add({strSqlReader("Antal"), strSqlReader("Land")})
+                If strSqlReader("Land") = "NOK" Then
+                    intAll_NO = strSqlReader("Antal")
+                End If
 
             End While
 
             objSQL01Conn.Close()
-
-            For Each orders_all In arrValues
-                If orders_all(1) = "DKK" Then
-                    intAll_DK = orders_all(0)
-                End If
-                If orders_all(1) = "SEK" Then
-                    intAll_SE = orders_all(0)
-                End If
-                If orders_all(1) = "NOK" Then
-                    intAll_NO = orders_all(0)
-                End If
-            Next
 
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetOrdersAll():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
@@ -206,31 +200,27 @@ Public Class WarehouseDashboardSvc
         Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersForToday.ExecuteReader()
         Try
 
-            Dim arrValues As List(Of String()) = New List(Of String())
-
             While strSqlReader.Read()
 
-                arrValues.Add({strSqlReader("Antal"), strSqlReader("Land")})
+                If strSqlReader("Land") = "DKK" Then
+                    intCreatedToday_DK = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Land") = "SEK" Then
+                    intCreatedToday_SE = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Land") = "NOK" Then
+                    intCreatedToday_NO = strSqlReader("Antal")
+                End If
 
             End While
 
-            For Each orders_all In arrValues
-                If orders_all(1) = "DKK" Then
-                    intCreatedToday_DK = orders_all(0)
-                End If
-                If orders_all(1) = "SEK" Then
-                    intCreatedToday_SE = orders_all(0)
-                End If
-                If orders_all(1) = "NOK" Then
-                    intCreatedToday_NO = orders_all(0)
-                End If
-            Next
+            objSQL01Conn.Close()
 
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetOrdersForToday():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
         End Try
-
-        objSQL01Conn.Close()
 
     End Sub
 
@@ -252,35 +242,31 @@ Public Class WarehouseDashboardSvc
         Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersShippedToday.ExecuteReader()
         Try
 
-            Dim arrValues As List(Of String()) = New List(Of String())
-
             While strSqlReader.Read()
 
-                arrValues.Add({strSqlReader("Antal"), strSqlReader("Land")})
+                If strSqlReader("Land") = "DKK" Then
+                    intShippedToday_DK = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Land") = "SEK" Then
+                    intShippedToday_SE = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Land") = "NOK" Then
+                    intShippedToday_NO = strSqlReader("Antal")
+                End If
 
             End While
 
-            For Each orders_all In arrValues
-                If orders_all(1) = "DKK" Then
-                    intShippedToday_DK = orders_all(0)
-                End If
-                If orders_all(1) = "SEK" Then
-                    intShippedToday_SE = orders_all(0)
-                End If
-                If orders_all(1) = "NOK" Then
-                    intShippedToday_NO = orders_all(0)
-                End If
-            Next
+            objSQL01Conn.Close()
 
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetOrdersShippedToday():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
         End Try
 
-        objSQL01Conn.Close()
-
     End Sub
 
-    Protected Sub GetOrdersPickByZone()
+    Protected Sub GetOrdersByPickZone()
 
         Dim strSqlCmdGetOrdersByZone As SqlCommand = objSQL01Conn.CreateCommand
         strSqlCmdGetOrdersByZone.CommandText =
@@ -297,37 +283,35 @@ Public Class WarehouseDashboardSvc
         Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersByZone.ExecuteReader()
         Try
 
-            Dim arrValues As List(Of String()) = New List(Of String())
-
             While strSqlReader.Read()
 
-                arrValues.Add({strSqlReader("Antal"), strSqlReader("Plukzone")})
+                If strSqlReader("Plukzone") = "BESTILLING" Then
+                    intPickZone_Bestilling = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Plukzone") = "KOMPATIBEL" Then
+                    intPickZone_Kompatibel = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Plukzone") = "OFFICE" Then
+                    intPickZone_Office = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Plukzone") = "ORIGINAL" Then
+                    intPickZone_Original = strSqlReader("Antal")
+                End If
+
+                If strSqlReader("Plukzone") = "TONER" Then
+                    intPickZone_Toner = strSqlReader("Antal")
+                End If
 
             End While
 
-            For Each orders_all In arrValues
-                If orders_all(1) = "BESTILLING" Then
-                    intPickZone_Bestilling = orders_all(0)
-                End If
-                If orders_all(1) = "KOMPATIBEL" Then
-                    intPickZone_Kompatibel = orders_all(0)
-                End If
-                If orders_all(1) = "OFFICE" Then
-                    intPickZone_Office = orders_all(0)
-                End If
-                If orders_all(1) = "ORIGINAL" Then
-                    intPickZone_Original = orders_all(0)
-                End If
-                If orders_all(1) = "TONER" Then
-                    intPickZone_Toner = orders_all(0)
-                End If
-            Next
+            objSQL01Conn.Close()
 
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetOrdersPickByZone():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
         End Try
-
-        objSQL01Conn.Close()
 
     End Sub
 
@@ -393,31 +377,22 @@ Public Class WarehouseDashboardSvc
         Dim strSqlReader As SqlDataReader = strSqlCmdVariousOrderData.ExecuteReader()
         Try
 
-            Dim arrValues As List(Of String()) = New List(Of String())
-
             While strSqlReader.Read()
 
-                arrValues.Add({strSqlReader("DelordreriAlt"), strSqlReader("DelordrerSendtiDag"), strSqlReader("OrdrerTilPlukialt"),
-                              strSqlReader("OrdrerSendtTilPlukidag"), strSqlReader("PlukketKlarTilPak"), strSqlReader("SnapshotCreatedAt")})
+                intSplitAll = strSqlReader("DelordreriAlt")
+                intSplitSentToday = strSqlReader("DelordrerSendtiDag")
+                intReadyToPickAll = strSqlReader("OrdrerTilPlukialt")
+                intReadyToPickCreatedToday = strSqlReader("OrdrerSendtTilPlukidag")
+                intPickedReadyToShip = strSqlReader("PlukketKlarTilPak")
+                dtSnapshotCreatedAt = strSqlReader("SnapshotCreatedAt")
 
             End While
 
-            For Each orders_all In arrValues
-
-                intSplitAll = orders_all(0)
-                intSplitSentToday = orders_all(1)
-                intReadyToPickAll = orders_all(2)
-                intReadyToPickCreatedToday = orders_all(3)
-                intPickedReadyToShip = orders_all(4)
-                dtSnapshotCreatedAt = orders_all(5)
-
-            Next
+            objSQL01Conn.Close()
 
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetVariousOrderData():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
         End Try
-
-        objSQL01Conn.Close()
 
     End Sub
 
