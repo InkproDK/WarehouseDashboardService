@@ -39,14 +39,12 @@ Public Class WarehouseDashboardSvc
 
     Protected Overrides Sub OnStart(ByVal args() As String)
         EventLog1.WriteEntry("Starting service...", EventLogEntryType.Information, 1)
-        ' Add code here to start your service. This method should set things
-        ' in motion so your service can do its work.
+        Timer1.Start()
     End Sub
 
     Protected Overrides Sub OnStop()
         EventLog1.WriteEntry("Stopping service...", EventLogEntryType.Information, 2)
         Timer1.Stop()
-        ' Add code here to perform any tear-down necessary to stop your service.
     End Sub
 
     Private Sub Timer1_Elapsed(sender As Object, e As Timers.ElapsedEventArgs) Handles Timer1.Elapsed
