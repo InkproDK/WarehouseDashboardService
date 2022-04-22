@@ -87,7 +87,7 @@ Public Class WarehouseDashboardSvc
                                             END"
             SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_DK", intAll_DK)
             SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_SE", intAll_SE)
-            SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_SE", intAll_NO)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_NO", intAll_NO)
             SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_DK", intCreatedToday_DK)
             SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_SE", intCreatedToday_SE)
             SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_NO", intCreatedToday_NO)
