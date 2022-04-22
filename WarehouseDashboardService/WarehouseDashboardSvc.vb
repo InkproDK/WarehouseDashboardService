@@ -5,7 +5,6 @@ Public Class WarehouseDashboardSvc
     Dim objSQL01Conn As New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
     Dim objWEB01Conn As New SqlConnection(ConfigurationManager.ConnectionStrings("web01conn").ConnectionString)
 
-    Dim boolPreviousIsDuplicate As Boolean = False
     Dim boolSnapshotTaken As Boolean = True
     Dim intAll_DK As Integer = 0
     Dim intAll_SE As Integer = 0
@@ -67,82 +66,57 @@ Public Class WarehouseDashboardSvc
 
         Try
 
-            Dim SqlCmdCheckIfPreviousRowIsuplicate As SqlCommand = objWEB01Conn.CreateCommand
-            SqlCmdCheckIfPreviousRowIsuplicate.CommandText = "SELECT TOP 1 * FROM wh_snapshots ORDER BY Id DESC"
+            Dim SqlCmdInsertSnapshop As SqlCommand = objWEB01Conn.CreateCommand
+            SqlCmdInsertSnapshop.CommandText = "
+                                            IF NOT EXISTS (SELECT TOP 1 * FROM [insight].[dbo].[wh_snapshots]
+                                                WHERE All_DK = @All_DK AND All_SE = @All_SE AND All_NO = @All_NO AND CreatedToday_DK = @CreatedToday_DK AND CreatedToday_SE = @CreatedToday_SE 
+                                                AND CreatedToday_NO = @CreatedToday_NO AND SplitAll = @SplitAll AND SplitSentToday = @SplitSentToday AND ReadyToPickAll = @ReadyToPickAll
+		                                        AND ReadyToPickCreatedToday = @ReadyToPickCreatedToday AND PickedReadyToShip = @PickedReadyToShip AND ShippedToday_DK = @ShippedToday_DK
+                                                AND ShippedToday_SE = @ShippedToday_SE AND ShippedToday_NO = @ShippedToday_NO
+                                                AND PickZone_Bestilling = @PickZone_Bestilling AND PickZone_Kompatibel = @PickZone_Kompatibel AND PickZone_Office = @PickZone_Office
+                                                AND PickZone_Original = @PickZone_Original AND PickZone_Toner = @PickZone_Toner
+                                                AND Id = (SELECT MAX(Id) FROM [insight].[dbo].[wh_snapshots]) ORDER BY Id DESC)
+                                            BEGIN
+                                            INSERT INTO wh_snapshots
+                                                (All_DK, All_SE, All_NO, CreatedToday_DK, CreatedToday_SE, CreatedToday_NO, SplitAll, SplitSentToday, ReadyToPickAll,
+                                                ReadyToPickCreatedToday, PickedReadyToShip, ShippedToday_DK, ShippedToday_SE, ShippedToday_NO, PickZone_Bestilling, PickZone_Kompatibel,
+                                                PickZone_Office, PickZone_Original, PickZone_Toner, SnapshotCreatedAt) VALUES
+                                                (@All_DK, @All_SE, @All_NO, @CreatedToday_DK, @CreatedToday_SE, @CreatedToday_NO, @SplitAll, @SplitSentToday, @ReadyToPickAll,
+                                                @ReadyToPickCreatedToday, @PickedReadyToShip, @ShippedToday_DK, @ShippedToday_SE, @ShippedToday_NO, @PickZone_Bestilling,
+                                                @PickZone_Kompatibel, @PickZone_Office, @PickZone_Original, @PickZone_Toner, @SnapshotCreatedAt)
+                                            END"
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_DK", intAll_DK)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_SE", intAll_SE)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_SE", intAll_NO)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_DK", intCreatedToday_DK)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_SE", intCreatedToday_SE)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_NO", intCreatedToday_NO)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@SplitAll", intSplitAll)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@SplitSentToday", intSplitSentToday)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@ReadyToPickAll", intReadyToPickAll)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@ReadyToPickCreatedToday", intReadyToPickCreatedToday)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickedReadyToShip", intPickedReadyToShip)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@ShippedToday_DK", intShippedToday_DK)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@ShippedToday_SE", intShippedToday_SE)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@ShippedToday_NO", intShippedToday_NO)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Bestilling", intPickZone_Bestilling)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Kompatibel", intPickZone_Kompatibel)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Office", intPickZone_Office)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Original", intPickZone_Original)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Toner", intPickZone_Toner)
+            SqlCmdInsertSnapshop.Parameters.AddWithValue("@SnapshotCreatedAt", dtSnapshotCreatedAt)
 
             If Not objWEB01Conn.State = ConnectionState.Open Then
                 objWEB01Conn.Open()
             End If
 
-            Dim SqlReaderCheckIfPreviousRowIsuplicate As SqlDataReader = SqlCmdCheckIfPreviousRowIsuplicate.ExecuteReader()
-
-            While SqlReaderCheckIfPreviousRowIsuplicate.Read()
-
-                If intAll_DK = SqlReaderCheckIfPreviousRowIsuplicate("All_DK") AndAlso intAll_SE = SqlReaderCheckIfPreviousRowIsuplicate("All_SE") AndAlso
-                    intAll_NO = SqlReaderCheckIfPreviousRowIsuplicate("All_NO") AndAlso intCreatedToday_DK = SqlReaderCheckIfPreviousRowIsuplicate("CreatedToday_DK") AndAlso
-                    intCreatedToday_SE = SqlReaderCheckIfPreviousRowIsuplicate("CreatedToday_SE") AndAlso intCreatedToday_NO = SqlReaderCheckIfPreviousRowIsuplicate("CreatedToday_NO") AndAlso
-                    intSplitAll = SqlReaderCheckIfPreviousRowIsuplicate("SplitAll") AndAlso intSplitSentToday = SqlReaderCheckIfPreviousRowIsuplicate("SplitSentToday") AndAlso
-                    intReadyToPickAll = SqlReaderCheckIfPreviousRowIsuplicate("ReadyToPickAll") AndAlso intReadyToPickCreatedToday = SqlReaderCheckIfPreviousRowIsuplicate("ReadyToPickCreatedToday") AndAlso
-                    intPickedReadyToShip = SqlReaderCheckIfPreviousRowIsuplicate("PickedReadyToShip") AndAlso intShippedToday_DK = SqlReaderCheckIfPreviousRowIsuplicate("ShippedToday_DK") AndAlso
-                    intShippedToday_SE = SqlReaderCheckIfPreviousRowIsuplicate("ShippedToday_SE") AndAlso intShippedToday_NO = SqlReaderCheckIfPreviousRowIsuplicate("ShippedToday_NO") AndAlso
-                    intPickZone_Bestilling = SqlReaderCheckIfPreviousRowIsuplicate("PickZone_Bestilling") AndAlso intPickZone_Kompatibel = SqlReaderCheckIfPreviousRowIsuplicate("PickZone_Kompatibel") AndAlso
-                    intPickZone_Office = SqlReaderCheckIfPreviousRowIsuplicate("PickZone_Office") AndAlso intPickZone_Original = SqlReaderCheckIfPreviousRowIsuplicate("PickZone_Original") AndAlso
-                    intPickZone_Toner = SqlReaderCheckIfPreviousRowIsuplicate("PickZone_Toner") Then
-
-                    boolPreviousIsDuplicate = True
-
-                End If
-
-            End While
+            SqlCmdInsertSnapshop.ExecuteNonQuery()
 
             If Not objWEB01Conn.State = ConnectionState.Closed Then
                 objWEB01Conn.Close()
             End If
 
-            If boolPreviousIsDuplicate = False Then
-
-                Dim SqlCmdInsertSnapshop As SqlCommand = objWEB01Conn.CreateCommand
-                SqlCmdInsertSnapshop.CommandText = "INSERT INTO wh_snapshots
-                                            (All_DK, ALL_SE, ALL_NO, CreatedToday_DK, CreatedToday_SE, CreatedToday_NO, SplitAll, SplitSentToday, ReadyToPickAll,
-                                            ReadyToPickCreatedToday, PickedReadyToShip, ShippedToday_DK, ShippedToday_SE, ShippedToday_NO, PickZone_Bestilling, PickZone_Kompatibel,
-                                            PickZone_Office, PickZone_Original, PickZone_Toner, SnapshotCreatedAt) VALUES
-                                            (@All_DK, @ALL_SE, @ALL_NO, @CreatedToday_DK, @CreatedToday_SE, @CreatedToday_NO, @SplitAll, @SplitSentToday, @ReadyToPickAll,
-                                            @ReadyToPickCreatedToday, @PickedReadyToShip, @ShippedToday_DK, @ShippedToday_SE, @ShippedToday_NO, @PickZone_Bestilling,
-                                            @PickZone_Kompatibel, @PickZone_Office, @PickZone_Original, @PickZone_Toner, @SnapshotCreatedAt)"
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@All_DK", intAll_DK)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ALL_SE", intAll_SE)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ALL_NO", intAll_NO)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_DK", intCreatedToday_DK)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_SE", intCreatedToday_SE)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@CreatedToday_NO", intCreatedToday_NO)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@SplitAll", intSplitAll)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@SplitSentToday", intSplitSentToday)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ReadyToPickAll", intReadyToPickAll)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ReadyToPickCreatedToday", intReadyToPickCreatedToday)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickedReadyToShip", intPickedReadyToShip)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ShippedToday_DK", intShippedToday_DK)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ShippedToday_SE", intShippedToday_SE)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@ShippedToday_NO", intShippedToday_NO)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Bestilling", intPickZone_Bestilling)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Kompatibel", intPickZone_Kompatibel)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Office", intPickZone_Office)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Original", intPickZone_Original)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@PickZone_Toner", intPickZone_Toner)
-                SqlCmdInsertSnapshop.Parameters.AddWithValue("@SnapshotCreatedAt", dtSnapshotCreatedAt)
-
-                If Not objWEB01Conn.State = ConnectionState.Open Then
-                    objWEB01Conn.Open()
-                End If
-
-                SqlCmdInsertSnapshop.ExecuteNonQuery()
-
-                If Not objWEB01Conn.State = ConnectionState.Closed Then
-                    objWEB01Conn.Close()
-                End If
-
-                SqlCmdInsertSnapshop.Parameters.Clear()
-
-            End If
+            SqlCmdInsertSnapshop.Parameters.Clear()
 
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetVariousOrderData():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
