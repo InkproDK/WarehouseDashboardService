@@ -131,6 +131,11 @@ Public Class WarehouseDashboardSvc
 
     Protected Sub GetOrdersAll()
 
+        ' Reset variables
+        intAll_DK = 0
+        intAll_SE = 0
+        intAll_NO = 0
+
         Dim strSqlCmdGetOrdersAll As SqlCommand = objSQL01Conn.CreateCommand
         strSqlCmdGetOrdersAll.CommandText =
             "With group1 AS
@@ -189,6 +194,11 @@ Public Class WarehouseDashboardSvc
 
     Protected Sub GetOrdersForToday()
 
+        ' Reset variables
+        intCreatedToday_DK = 0
+        intCreatedToday_SE = 0
+        intCreatedToday_NO = 0
+
         Dim strSqlCmdGetOrdersForToday As SqlCommand = objSQL01Conn.CreateCommand
         strSqlCmdGetOrdersForToday.CommandText =
             "With group1 As
@@ -245,6 +255,11 @@ Public Class WarehouseDashboardSvc
 
     Protected Sub GetOrdersShippedToday()
 
+        ' Reset variables
+        intShippedToday_DK = 0
+        intShippedToday_SE = 0
+        intShippedToday_NO = 0
+
         Dim strSqlCmdGetOrdersShippedToday As SqlCommand = objSQL01Conn.CreateCommand
         strSqlCmdGetOrdersShippedToday.CommandText =
             "SELECT COUNT(DISTINCT slv.[Order No_]) AS 'Antal', CASE WHEN [Currency Code] = '' THEN 'DKK' ELSE [Currency Code] END AS 'Land'
@@ -288,6 +303,13 @@ Public Class WarehouseDashboardSvc
     End Sub
 
     Protected Sub GetOrdersByPickZone()
+
+        ' Reset variables
+        intPickZone_Bestilling = 0
+        intPickZone_Kompatibel = 0
+        intPickZone_Office = 0
+        intPickZone_Original = 0
+        intPickZone_Toner = 0
 
         Dim strSqlCmdGetOrdersByZone As SqlCommand = objSQL01Conn.CreateCommand
         strSqlCmdGetOrdersByZone.CommandText =
@@ -339,6 +361,13 @@ Public Class WarehouseDashboardSvc
     End Sub
 
     Protected Sub GetVariousOrderData()
+
+        ' Reset variables
+        intSplitAll = 0
+        intSplitSentToday = 0
+        intReadyToPickAll = 0
+        intReadyToPickCreatedToday = 0
+        intPickedReadyToShip = 0
 
         Dim strSqlCmdVariousOrderData As SqlCommand = objSQL01Conn.CreateCommand
         strSqlCmdVariousOrderData.CommandText =
