@@ -2,29 +2,28 @@
 Imports System.Configuration
 Public Class WarehouseDashboardSvc
 
-    Dim objSQL01Conn As New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
-    Dim objWEB01Conn As New SqlConnection(ConfigurationManager.ConnectionStrings("web01conn").ConnectionString)
-
-    Dim intAll_DK As Integer = 0
-    Dim intAll_SE As Integer = 0
-    Dim intAll_NO As Integer = 0
-    Dim intCreatedToday_DK As Integer = 0
-    Dim intCreatedToday_SE As Integer = 0
-    Dim intCreatedToday_NO As Integer = 0
-    Dim intSplitAll As Integer = 0
-    Dim intSplitSentToday As Integer = 0
-    Dim intReadyToPickAll As Integer = 0
-    Dim intReadyToPickCreatedToday As Integer = 0
-    Dim intPickedReadyToShip As Integer = 0
-    Dim intShippedToday_DK As Integer = 0
-    Dim intShippedToday_SE As Integer = 0
-    Dim intShippedToday_NO As Integer = 0
-    Dim intPickZone_Bestilling As Integer = 0
-    Dim intPickZone_Kompatibel As Integer = 0
-    Dim intPickZone_Office As Integer = 0
-    Dim intPickZone_Original As Integer = 0
-    Dim intPickZone_Toner As Integer = 0
-    Dim dtSnapshotCreatedAt As Date = Now()
+    Dim objSQL01Conn As SqlConnection 'New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
+    Dim objWEB01Conn As SqlConnection 'New SqlConnection(ConfigurationManager.ConnectionStrings("web01conn").ConnectionString)
+    Dim intAll_DK As Integer ' = 0
+    Dim intAll_SE As Integer ' = 0
+    Dim intAll_NO As Integer ' = 0
+    Dim intCreatedToday_DK As Integer ' = 0
+    Dim intCreatedToday_SE As Integer ' = 0
+    Dim intCreatedToday_NO As Integer ' = 0
+    Dim intSplitAll As Integer ' = 0
+    Dim intSplitSentToday As Integer ' = 0
+    Dim intReadyToPickAll As Integer ' = 0
+    Dim intReadyToPickCreatedToday As Integer ' = 0
+    Dim intPickedReadyToShip As Integer ' = 0
+    Dim intShippedToday_DK As Integer ' = 0
+    Dim intShippedToday_SE As Integer ' = 0
+    Dim intShippedToday_NO As Integer ' = 0
+    Dim intPickZone_Bestilling As Integer ' = 0
+    Dim intPickZone_Kompatibel As Integer ' = 0
+    Dim intPickZone_Office As Integer ' = 0
+    Dim intPickZone_Original As Integer ' = 0
+    Dim intPickZone_Toner As Integer ' = 0
+    Dim dtSnapshotCreatedAt As Date ' = Now()
     Public Sub New()
         MyBase.New()
         InitializeComponent()
@@ -61,6 +60,8 @@ Public Class WarehouseDashboardSvc
         GetVariousOrderData()
 
         Try
+
+            objWEB01Conn = New SqlConnection(ConfigurationManager.ConnectionStrings("web01conn").ConnectionString)
 
             Dim SqlCmdInsertSnapshop As SqlCommand = objWEB01Conn.CreateCommand
             SqlCmdInsertSnapshop.CommandText = "
@@ -107,11 +108,6 @@ Public Class WarehouseDashboardSvc
             End If
 
             SqlCmdInsertSnapshop.ExecuteNonQuery()
-
-            If Not objWEB01Conn.State = ConnectionState.Closed Then
-                objWEB01Conn.Close()
-            End If
-
             SqlCmdInsertSnapshop.Parameters.Clear()
 
         Catch ex As Exception
@@ -120,19 +116,24 @@ Public Class WarehouseDashboardSvc
             If Not objWEB01Conn.State = ConnectionState.Closed Then
                 objWEB01Conn.Close()
             End If
+            objWEB01Conn.Dispose()
         End Try
 
     End Sub
 
     Protected Sub GetOrdersAll()
 
-        ' Reset variables
-        intAll_DK = 0
-        intAll_SE = 0
-        intAll_NO = 0
+        Try
 
-        Dim strSqlCmdGetOrdersAll As SqlCommand = objSQL01Conn.CreateCommand
-        strSqlCmdGetOrdersAll.CommandText =
+            objSQL01Conn = New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
+
+            ' Reset variables
+            intAll_DK = 0
+            intAll_SE = 0
+            intAll_NO = 0
+
+            Dim strSqlCmdGetOrdersAll As SqlCommand = objSQL01Conn.CreateCommand
+            strSqlCmdGetOrdersAll.CommandText =
             "With group1 AS
                 (SELECT COUNT(*) As AntalIalt, CASE WHEN [Currency Code] = '' THEN 'DKK' ELSE [Currency Code] END AS 'IaltPrLand'
                     FROM [BC18_InkPro].[dbo].[Inkpro$Sales Header$437dbf0e-84ff-417a-965d-ed2bb9650972] sh
@@ -154,12 +155,12 @@ Public Class WarehouseDashboardSvc
 		        SELECT (ISNULL([AntalIalt], 0) - ISNULL(AntalPrLand, 0)) AS 'Antal', COALESCE(group1.IaltPrLand, group2.MinusIaltPrLand) AS 'Land' FROM group1 FULL OUTER JOIN group2 ON group1.IaltPrLand = group2.MinusIaltPrLand
 		        GROUP BY group1.IaltPrLand, group2.MinusIaltPrLand, AntalIalt, AntalPrLand"
 
-        If Not objSQL01Conn.State = ConnectionState.Open Then
-            objSQL01Conn.Open()
-        End If
+            If Not objSQL01Conn.State = ConnectionState.Open Then
+                objSQL01Conn.Open()
+            End If
 
-        Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersAll.ExecuteReader()
-        Try
+            Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersAll.ExecuteReader()
+
 
             While strSqlReader.Read()
 
@@ -183,11 +184,16 @@ Public Class WarehouseDashboardSvc
             If Not objSQL01Conn.State = ConnectionState.Closed Then
                 objSQL01Conn.Close()
             End If
+            objSQL01Conn.Dispose()
         End Try
 
     End Sub
 
     Protected Sub GetOrdersForToday()
+
+        Try
+
+            objSQL01Conn = New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
 
         ' Reset variables
         intCreatedToday_DK = 0
@@ -219,8 +225,7 @@ Public Class WarehouseDashboardSvc
             objSQL01Conn.Open()
         End If
 
-        Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersForToday.ExecuteReader()
-        Try
+            Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersForToday.ExecuteReader()
 
             While strSqlReader.Read()
 
@@ -244,19 +249,23 @@ Public Class WarehouseDashboardSvc
             If Not objSQL01Conn.State = ConnectionState.Closed Then
                 objSQL01Conn.Close()
             End If
+            objSQL01Conn.Dispose()
         End Try
 
     End Sub
 
     Protected Sub GetOrdersShippedToday()
 
-        ' Reset variables
-        intShippedToday_DK = 0
-        intShippedToday_SE = 0
-        intShippedToday_NO = 0
+        Try
 
-        Dim strSqlCmdGetOrdersShippedToday As SqlCommand = objSQL01Conn.CreateCommand
-        strSqlCmdGetOrdersShippedToday.CommandText =
+            objSQL01Conn = New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
+            ' Reset variables
+            intShippedToday_DK = 0
+            intShippedToday_SE = 0
+            intShippedToday_NO = 0
+
+            Dim strSqlCmdGetOrdersShippedToday As SqlCommand = objSQL01Conn.CreateCommand
+            strSqlCmdGetOrdersShippedToday.CommandText =
             "SELECT COUNT(DISTINCT slv.[Order No_]) AS 'Antal', CASE WHEN [Currency Code] = '' THEN 'DKK' ELSE [Currency Code] END AS 'Land'
                 FROM [BC18_InkPro].[dbo].[Inkpro$Sales Shipment Line$437dbf0e-84ff-417a-965d-ed2bb9650972] slv
                 LEFT JOIN [BC18_InkPro].[dbo].[Inkpro$Sales Shipment Header$437dbf0e-84ff-417a-965d-ed2bb9650972] so ON slv.[Order No_] = so.[Order No_]
@@ -264,12 +273,12 @@ Public Class WarehouseDashboardSvc
                 AND slv.[Sell-to Customer No_] <> '888'
                 GROUP BY [Currency Code]"
 
-        If Not objSQL01Conn.State = ConnectionState.Open Then
-            objSQL01Conn.Open()
-        End If
+            If Not objSQL01Conn.State = ConnectionState.Open Then
+                objSQL01Conn.Open()
+            End If
 
-        Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersShippedToday.ExecuteReader()
-        Try
+            Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersShippedToday.ExecuteReader()
+
 
             While strSqlReader.Read()
 
@@ -293,33 +302,37 @@ Public Class WarehouseDashboardSvc
             If Not objSQL01Conn.State = ConnectionState.Closed Then
                 objSQL01Conn.Close()
             End If
+            objSQL01Conn.Dispose()
         End Try
 
     End Sub
 
     Protected Sub GetOrdersByPickZone()
 
-        ' Reset variables
-        intPickZone_Bestilling = 0
-        intPickZone_Kompatibel = 0
-        intPickZone_Office = 0
-        intPickZone_Original = 0
-        intPickZone_Toner = 0
+        Try
 
-        Dim strSqlCmdGetOrdersByZone As SqlCommand = objSQL01Conn.CreateCommand
-        strSqlCmdGetOrdersByZone.CommandText =
+            objSQL01Conn = New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
+
+            ' Reset variables
+            intPickZone_Bestilling = 0
+            intPickZone_Kompatibel = 0
+            intPickZone_Office = 0
+            intPickZone_Original = 0
+            intPickZone_Toner = 0
+
+            Dim strSqlCmdGetOrdersByZone As SqlCommand = objSQL01Conn.CreateCommand
+            strSqlCmdGetOrdersByZone.CommandText =
             "SELECT COUNT(DISTINCT [Whse_ Document No_]) As 'Antal', ll2.[C2IT Assigned Zone] As 'Plukzone'
                 FROM [BC18_InkPro].[dbo].[Inkpro$Warehouse Activity Line$437dbf0e-84ff-417a-965d-ed2bb9650972] ll 
                 LEFT JOIN [BC18_InkPro].[dbo].[Inkpro$Warehouse Shipment Header$911dbd37-a000-4768-96cd-e49de6a45f4d] ll2 ON ll.[Whse_ Document No_] = ll2.No_
                 WHERE [Activity Type] = 2 AND ll.[Zone Code] NOT IN ('LEVER', 'MONTAGE') AND ll.[Destination No_] <> '888'
                 GROUP BY ll2.[C2IT Assigned Zone]"
 
-        If Not objSQL01Conn.State = ConnectionState.Open Then
-            objSQL01Conn.Open()
-        End If
+            If Not objSQL01Conn.State = ConnectionState.Open Then
+                objSQL01Conn.Open()
+            End If
 
-        Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersByZone.ExecuteReader()
-        Try
+            Dim strSqlReader As SqlDataReader = strSqlCmdGetOrdersByZone.ExecuteReader()
 
             While strSqlReader.Read()
 
@@ -351,21 +364,26 @@ Public Class WarehouseDashboardSvc
             If Not objSQL01Conn.State = ConnectionState.Closed Then
                 objSQL01Conn.Close()
             End If
+            objSQL01Conn.Dispose()
         End Try
 
     End Sub
 
     Protected Sub GetVariousOrderData()
 
-        ' Reset variables
-        intSplitAll = 0
-        intSplitSentToday = 0
-        intReadyToPickAll = 0
-        intReadyToPickCreatedToday = 0
-        intPickedReadyToShip = 0
+        Try
 
-        Dim strSqlCmdVariousOrderData As SqlCommand = objSQL01Conn.CreateCommand
-        strSqlCmdVariousOrderData.CommandText =
+            objSQL01Conn = New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
+
+            ' Reset variables
+            intSplitAll = 0
+            intSplitSentToday = 0
+            intReadyToPickAll = 0
+            intReadyToPickCreatedToday = 0
+            intPickedReadyToShip = 0
+
+            Dim strSqlCmdVariousOrderData As SqlCommand = objSQL01Conn.CreateCommand
+            strSqlCmdVariousOrderData.CommandText =
             "SELECT 
 
                 (SELECT COUNT(DISTINCT sl.[Document No_])
@@ -417,12 +435,11 @@ Public Class WarehouseDashboardSvc
                 (SELECT GETDATE()
                 ) As 'SnapshotCreatedAt'"
 
-        If Not objSQL01Conn.State = ConnectionState.Open Then
-            objSQL01Conn.Open()
-        End If
+            If Not objSQL01Conn.State = ConnectionState.Open Then
+                objSQL01Conn.Open()
+            End If
 
-        Dim strSqlReader As SqlDataReader = strSqlCmdVariousOrderData.ExecuteReader()
-        Try
+            Dim strSqlReader As SqlDataReader = strSqlCmdVariousOrderData.ExecuteReader()
 
             While strSqlReader.Read()
 
@@ -439,8 +456,9 @@ Public Class WarehouseDashboardSvc
             EventLog1.WriteEntry("Exception in GetVariousOrderData():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
         Finally
             If Not objSQL01Conn.State = ConnectionState.Closed Then
-                objSQL01Conn.Close()
-            End If
+            objSQL01Conn.Close()
+        End If
+        objSQL01Conn.Dispose()
         End Try
 
     End Sub
