@@ -5,7 +5,6 @@ Public Class WarehouseDashboardSvc
     Dim objSQL01Conn As New SqlConnection(ConfigurationManager.ConnectionStrings("sql01conn").ConnectionString)
     Dim objWEB01Conn As New SqlConnection(ConfigurationManager.ConnectionStrings("web01conn").ConnectionString)
 
-    Dim boolSnapshotTaken As Boolean = True
     Dim intAll_DK As Integer = 0
     Dim intAll_SE As Integer = 0
     Dim intAll_NO As Integer = 0
@@ -49,10 +48,7 @@ Public Class WarehouseDashboardSvc
 
     Private Sub Timer1_Elapsed(sender As Object, e As Timers.ElapsedEventArgs) Handles Timer1.Elapsed
 
-        If boolSnapshotTaken = True Then
-            boolSnapshotTaken = False
-            CreateSnapshot()
-        End If
+        CreateSnapshot()
 
     End Sub
 
@@ -121,7 +117,6 @@ Public Class WarehouseDashboardSvc
         Catch ex As Exception
             EventLog1.WriteEntry("Exception in GetVariousOrderData():" & vbCrLf & ex.ToString(), EventLogEntryType.Error, 15)
         Finally
-            boolSnapshotTaken = True
             If Not objWEB01Conn.State = ConnectionState.Closed Then
                 objWEB01Conn.Close()
             End If
